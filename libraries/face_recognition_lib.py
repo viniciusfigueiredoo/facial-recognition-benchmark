@@ -31,32 +31,58 @@ def gerar_embedding(path_individual, nome, matricula=0, tipo_retorno=1):
     if tipo_retorno == 1:
         pasta_destino = "data/json_individual"
         caminho_arquivo = os.path.join(pasta_destino, "encodings.json")
-        registros = []
+        registro = []
 
-        # caso o arquivo encondings.json já exista para não apagar os encodings existentes
         if os.path.exists(caminho_arquivo):
             with open(caminho_arquivo, "r", encoding="utf-8") as arq_json:
-                conteudo_existente = json.load(arq_json)
+                conteudo = json.load(arq_json)
 
-            if isinstance(conteudo_existente, list):
-                registros = conteudo_existente
-            elif isinstance(conteudo_existente, dict):
-                registros = [conteudo_existente]
+            # transforma o conteudo em json ja existente em lista para tratamento
+            if isinstance(conteudo, list):
+                registro = conteudo
+            elif isinstance(conteudo, dict):
+                registro = [conteudo]
 
-        registros.append(resultado)
+        # verificar pela matricula a existencia do aluno
+        for aluno in registro:
+            if aluno["matricula"] == matricula:
+                return "Aluno ja cadastrado"
 
-        # escrever o arquivo encondings.json na pasta data/json_individual
+        # salva o registro passado
+        registro.append(resultado)
+
+        # salva o arquivo em json
         with open(caminho_arquivo, "w", encoding="utf-8") as arq_json:
-            json.dump(registros, arq_json, ensure_ascii=False, indent=4)
+            json.dump(registro, arq_json, ensure_ascii=False, indent=4)
 
     return resultado
 
-def comparar_embedding(path_turma, pasta_JSON):
+def comparar_embedding(path_turma, pasta_JSON = 0):
     '''
-	1. Gerar embeddings da turma (usando opção 2)
+	1. Gerar embeddings da turma
 	2. Iterar embeddings nos JSONs com os gerados da turma
 	3. return {"rostos encontrados": X, "acurácia": Y}
     '''
-    pass
+
+    list_turma = []
+    cont = 0
+    img_turma = fc.load_image_file(path_turma)
+    encodings_turma = fc.face_encodings(img_turma)
+
+    for encoding in encodings_turma:
+        list_turma.append(encoding.tolist())
+
+    with open("data/json_individual/encodings.json", "r", encoding="utf-8") as arq_json:
+        conteudo = json.load(arq_json)
+
+
+
+
+
+
+
+    return cont
+
+
 
 
