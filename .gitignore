@@ -1,4 +1,6 @@
 data/individual/*
+data/JSON/*
 data/turma/*
 !data/individual/.gitkeep
 !data/turma/.gitkeep
+!data/JSON/.gitkeep
