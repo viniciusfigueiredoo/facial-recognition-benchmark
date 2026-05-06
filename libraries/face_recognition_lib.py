@@ -1,5 +1,6 @@
 import os
 import json
+import numpy as np
 import face_recognition as fc
 
 
@@ -57,31 +58,50 @@ def gerar_embedding(path_individual, nome, matricula=0, tipo_retorno=1):
 
     return resultado
 
-def comparar_embedding(path_turma, pasta_JSON = 0):
+def comparar_embedding(path_turma, pasta_JSON="data/json_individual/encodings.json"):
     '''
 	1. Gerar embeddings da turma
 	2. Iterar embeddings nos JSONs com os gerados da turma
 	3. return {"rostos encontrados": X, "acurácia": Y}
     '''
 
-    list_turma = []
-    cont = 0
     img_turma = fc.load_image_file(path_turma)
     encodings_turma = fc.face_encodings(img_turma)
 
-    for encoding in encodings_turma:
-        list_turma.append(encoding.tolist())
-
-    with open("data/json_individual/encodings.json", "r", encoding="utf-8") as arq_json:
+    # leitura do arquivo json contendo as informações de alunos cadastrados
+    with open(pasta_JSON, "r", encoding="utf-8") as arq_json:
         conteudo = json.load(arq_json)
 
+    alunos_encontrados = []
+    matriculas_encontradas = set()
+
+    for indice_rosto, encoding_turma in enumerate(encodings_turma):
+
+        for aluno in conteudo:
+            # ignorar alunos já identificados
+            if aluno["matricula"] in matriculas_encontradas:
+                continue
+            # transforma a leitura do json de lista para um array
+            encodings_aluno = [
+                np.array(encoding_salvo)
+                # pegar embedding do aluno
+                for encoding_salvo in aluno.get("embedding", [])
+            ]
+            # compara os arrays dos embeddings do encodings_aluno com os embedding da turma
+            resultados = fc.compare_faces(encodings_aluno, encoding_turma)
+
+            # caso haja algum rosto compatível encontrado
+            if True in resultados:
+                alunos_encontrados.append({"nome": aluno["nome"],"matricula": aluno["matricula"]})
+                break
+
+    return {
+        "rostos_na_foto": len(encodings_turma),
+        "alunos_identificados": len(alunos_encontrados),
+        "alunos": alunos_encontrados,
+    }
 
 
-
-
-
-
-    return cont
 
 
 
