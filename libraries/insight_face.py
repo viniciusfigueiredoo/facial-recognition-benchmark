@@ -1,25 +1,12 @@
-import insightface
 from insightface.app import FaceAnalysis
 import cv2
 import json
 import os
 import numpy as np
 
-# Bibliotecas desnecessárias para o funcionamento
-import sys
-import warnings
+app = FaceAnalysis(name='buffalo_sc') 
+app.prepare(ctx_id=0, det_size=(1280, 1280))
 
-# Limpando o terminal
-warnings.filterwarnings("ignore")
-
-sys.stdout = open(os.devnull, 'w')
-sys.stderr = open(os.devnull, 'w')
-
-app = FaceAnalysis(name='buffalo_l') 
-app.prepare(ctx_id=0, det_size=(640, 640))
-
-sys.stdout = sys.__stdout__
-sys.stderr = sys.__stderr__
 
 # Funções auxiliares
 def similaridade_cosseno(embedding1, embedding2):
@@ -90,10 +77,6 @@ def comparar_embedding(path_turma, pasta_JSON):
             })
         
     return {
-            "rostos_encontrados": len(reconhecidos),
-            "acuracia": round(float(melhor_pontuacao), 2)
-        }
-            
-gerar_embedding(r"data\individual\Vinicius.jpg", "Vinicius Figueiredo", "202411250033")
-
-print(comparar_embedding(r"data\turma\Vinicius-Caua-Murilo.jpg", r"data\JSON"))
+        "rostos_encontrados": len(rostos),  # total detectado na foto
+        "acuracia": round(float(reconhecidos[0]["pontuacao"]), 2) if reconhecidos else 0.0
+    }
