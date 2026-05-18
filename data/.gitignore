@@ -1,0 +1,8 @@
+individual/*
+!individual/.gitkeep
+
+json_individual/*
+!json_individual/.gitkeep
+
+turma/*
+!turma/.gitkeep
