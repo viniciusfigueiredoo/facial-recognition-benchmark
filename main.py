@@ -2,7 +2,7 @@ import time
 import os
 from utils.metricas import ColetorMetricas
 import libraries.insight_face as insightface
-#import libraries.face_recognition as face_rec
+import libraries.face_recognition_lib as face_rec
 #import libraries.dlib as dlib
 
 # Configuração inicial
@@ -16,7 +16,7 @@ matricula_teste = "202411250033"
 
 libraries = {
     "insight_face": insightface,
-    #"face_recognition": face_rec,
+    "face_recognition": face_rec,
     #"dlib": dlib,
 }
 

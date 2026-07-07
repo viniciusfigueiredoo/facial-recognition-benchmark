@@ -11,98 +11,79 @@ def gerar_embedding(path_individual, nome, matricula=0, tipo_retorno=1):
 	se 1, gerar JSON com nome, matricula e embedding
 	senão, return dict(nome="nome", matricula="matricula", embedding="embedding")
     '''
-    list_encodings = []
-
-
     # realiza o load da imagem
     imagem_carregada = fc.load_image_file(path_individual)
     # encontra o encodings de todos rostos presentes na foto
     encodings = fc.face_encodings(imagem_carregada)
 
-    for encoding in encodings:
-        list_encodings.append(encoding.tolist())
+    if len(encodings) != 1:
+        print("Nenhum ou mais de um rosto numa foto individual.")
+    else:
+        # formato do dicionario que vai se tornar o JSON
+        resultado = {
+            "nome": nome,
+            "matricula": matricula,
+            "embedding": encodings[0].tolist(),
+        }
 
-    # formato do dicionario que vai se tornar o JSON
-    resultado = {
-        "nome": nome,
-        "matricula": matricula,
-        "embedding": list_encodings,
-    }
+        if tipo_retorno == 1:
+            os.makedirs("data/JSON", exist_ok=True)
+            path_json = os.path.join("data", "JSON", f"{matricula}.json")
+            with open(path_json, "w", encoding="utf-8") as arq_json:
+                json.dump(resultado, arq_json, ensure_ascii=False, indent=4)
+        else:
+            return resultado
 
-    if tipo_retorno == 1:
-        pasta_destino = "data/json_individual"
-        caminho_arquivo = os.path.join(pasta_destino, "encodings.json")
-        registro = []
-
-        if os.path.exists(caminho_arquivo):
-            with open(caminho_arquivo, "r", encoding="utf-8") as arq_json:
-                conteudo = json.load(arq_json)
-
-            # transforma o conteudo em json ja existente em lista para tratamento
-            if isinstance(conteudo, list):
-                registro = conteudo
-            elif isinstance(conteudo, dict):
-                registro = [conteudo]
-
-        # verificar pela matricula a existencia do aluno
-        for aluno in registro:
-            if aluno["matricula"] == matricula:
-                return "Aluno ja cadastrado"
-
-        # salva o registro passado
-        registro.append(resultado)
-
-        # salva o arquivo em json
-        with open(caminho_arquivo, "w", encoding="utf-8") as arq_json:
-            json.dump(registro, arq_json, ensure_ascii=False, indent=4)
-
-    return resultado
-
-def comparar_embedding(path_turma, pasta_JSON="data/json_individual/encodings.json"):
+def comparar_embedding(path_turma, pasta_JSON):
     '''
 	1. Gerar embeddings da turma
 	2. Iterar embeddings nos JSONs com os gerados da turma
 	3. return {"rostos encontrados": X, "acurácia": Y}
     '''
 
+    # Carregando todos os JSONs e montando o database
+    database = []
+    arquivos = os.listdir(pasta_JSON)
+    for arquivo in arquivos:
+        if arquivo.endswith(".json"):
+            path_completo = os.path.join(pasta_JSON, arquivo)
+
+            with open(path_completo, "r", encoding="utf-8") as arq_json:
+                dados = json.load(arq_json)
+                database.append({
+                    "nome": dados["nome"],
+                    "matricula": dados["matricula"],
+                    "embedding": np.array(dados["embedding"]),
+                })
+
+    # Processar dados da turma
     img_turma = fc.load_image_file(path_turma)
     encodings_turma = fc.face_encodings(img_turma)
 
-    # leitura do arquivo json contendo as informações de alunos cadastrados
-    with open(pasta_JSON, "r", encoding="utf-8") as arq_json:
-        conteudo = json.load(arq_json)
+    # Comparar cada rosto contra o database
+    reconhecidos = []
+    for encoding_turma in encodings_turma:
+        melhor_match = None
+        melhor_pontuacao = -1
 
-    alunos_encontrados = []
-    matriculas_encontradas = set()
+        for aluno in database:
+            distancia = fc.face_distance([aluno["embedding"]], encoding_turma)[0]
+            pontuacao = 1 - distancia
 
-    for indice_rosto, encoding_turma in enumerate(encodings_turma):
+            if pontuacao > melhor_pontuacao:
+                melhor_pontuacao = pontuacao
+                melhor_match = aluno
 
-        for aluno in conteudo:
-            # ignorar alunos já identificados
-            if aluno["matricula"] in matriculas_encontradas:
-                continue
-            # transforma a leitura do json de lista para um array
-            encodings_aluno = [
-                np.array(encoding_salvo)
-                # pegar embedding do aluno
-                for encoding_salvo in aluno.get("embedding", [])
-            ]
-            # compara os arrays dos embeddings do encodings_aluno com os embedding da turma
-            resultados = fc.compare_faces(encodings_aluno, encoding_turma)
-
-            # caso haja algum rosto compatível encontrado
-            if True in resultados:
-                alunos_encontrados.append({"nome": aluno["nome"],"matricula": aluno["matricula"]})
-                break
+        if melhor_match and melhor_pontuacao > 0.5:
+            reconhecidos.append({
+                "nome": melhor_match["nome"],
+                "matricula": melhor_match["matricula"],
+                "pontuacao": round(float(melhor_pontuacao), 2)
+            })
 
     return {
-        "rostos_na_foto": len(encodings_turma),
-        "alunos_identificados": len(alunos_encontrados),
-        "alunos": alunos_encontrados,
+        "rostos_encontrados": len(encodings_turma),
+        "acuracia": round(float(reconhecidos[0]["pontuacao"]), 2) if reconhecidos else 0.0
     }
-
-
-
-
 
 
