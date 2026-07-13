@@ -4,8 +4,11 @@ import json
 import os
 import numpy as np
 
-app = FaceAnalysis(name='buffalo_sc') 
+app = FaceAnalysis(name='buffalo_sc')
 app.prepare(ctx_id=0, det_size=(1280, 1280))
+
+# subpasta propria em data/JSON, pra nao colidir com embeddings de outras bibliotecas
+NOME_BIBLIOTECA = "insight_face"
 
 
 # Funções auxiliares
@@ -27,21 +30,25 @@ def gerar_embedding(path_individual, nome, matricula, tipo_retorno=1):
         }
         
         if tipo_retorno == 1:
-            os.makedirs("data/JSON", exist_ok=True)
-            path_json = os.path.join("data", "JSON", f"{matricula}.json")
+            pasta_lib = os.path.join("data", "JSON", NOME_BIBLIOTECA)
+            os.makedirs(pasta_lib, exist_ok=True)
+            path_json = os.path.join(pasta_lib, f"{matricula}.json")
             with open(path_json, "w") as f:
                 json.dump(dados, f)
         else:
             return dados
 
-# Comparando embeddings gerados na foto da turma com o aluno buscado  
+# Comparando embeddings gerados na foto da turma com o aluno buscado
 def comparar_embedding(path_turma, pasta_JSON):
     # Carregando todos os JSONs e montando o database
+    pasta_lib = os.path.join(pasta_JSON, NOME_BIBLIOTECA)
+    os.makedirs(pasta_lib, exist_ok=True)
+
     database = []
-    arquivos = os.listdir(pasta_JSON)
+    arquivos = os.listdir(pasta_lib)
     for arquivo in arquivos:
         if arquivo.endswith(".json"):
-            path_completo = os.path.join(pasta_JSON, arquivo)
+            path_completo = os.path.join(pasta_lib, arquivo)
         
             with open(path_completo, "r") as f:
                 dados = json.load(f)

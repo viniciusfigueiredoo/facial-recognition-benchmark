@@ -3,6 +3,9 @@ import json
 import numpy as np
 import face_recognition as fc
 
+# subpasta propria em data/JSON, pra nao colidir com embeddings de outras bibliotecas
+NOME_BIBLIOTECA = "face_recognition"
+
 
 def gerar_embedding(path_individual, nome, matricula=0, tipo_retorno=1):
     '''
@@ -27,8 +30,9 @@ def gerar_embedding(path_individual, nome, matricula=0, tipo_retorno=1):
         }
 
         if tipo_retorno == 1:
-            os.makedirs("data/JSON", exist_ok=True)
-            path_json = os.path.join("data", "JSON", f"{matricula}.json")
+            pasta_lib = os.path.join("data", "JSON", NOME_BIBLIOTECA)
+            os.makedirs(pasta_lib, exist_ok=True)
+            path_json = os.path.join(pasta_lib, f"{matricula}.json")
             with open(path_json, "w", encoding="utf-8") as arq_json:
                 json.dump(resultado, arq_json, ensure_ascii=False, indent=4)
         else:
@@ -42,11 +46,14 @@ def comparar_embedding(path_turma, pasta_JSON):
     '''
 
     # Carregando todos os JSONs e montando o database
+    pasta_lib = os.path.join(pasta_JSON, NOME_BIBLIOTECA)
+    os.makedirs(pasta_lib, exist_ok=True)
+
     database = []
-    arquivos = os.listdir(pasta_JSON)
+    arquivos = os.listdir(pasta_lib)
     for arquivo in arquivos:
         if arquivo.endswith(".json"):
-            path_completo = os.path.join(pasta_JSON, arquivo)
+            path_completo = os.path.join(pasta_lib, arquivo)
 
             with open(path_completo, "r", encoding="utf-8") as arq_json:
                 dados = json.load(arq_json)
