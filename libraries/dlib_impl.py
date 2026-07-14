@@ -11,7 +11,7 @@ face_rec = dlib.face_recognition_model_v1(r"..\modelos\dlib_face_recognition_res
 detector = dlib.get_frontal_face_detector()
 
 
-PASTA_DADOS = r"C:\Users\Murilo\Projeto_Dlib\dados"
+PASTA_DADOS = r"C:\Users\Murilo"
 os.makedirs(PASTA_DADOS, exist_ok=True)
 
 
@@ -163,5 +163,4 @@ def comparar_embedding(path_turma, pasta_JSON):
     }
 
     return resultado
-
 
