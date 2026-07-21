@@ -1,23 +1,26 @@
 import time
 import os
+from pathlib import Path
 from utils.metricas import ColetorMetricas
 import libraries.insight_face as insightface
 import libraries.face_recognition_lib as face_rec
-#import libraries.dlib as dlib
+import libraries.dlib_impl as dlib
 
 # Configuração inicial
 
-foto_individual = r"data\individual\vinicius.jpg"
-foto_grupo = r"data\turma\grupo.jpg"
-pasta_embeddings = r"data\JSON"
+ROOT_DIR = Path(__file__).resolve().parent
 
-nome_teste = "Vinicius"
-matricula_teste = "202411250033"
+ft_individual = ROOT_DIR / "data" / "individual" / "ind_caua.jpeg"
+ft_grupo = ROOT_DIR / "data" / "turma" / "centro.jpeg"
+pasta_embeddings = ROOT_DIR / "data" / "JSON"
+
+nome_teste = "caua"
+matricula_teste = "202411250036"
 
 libraries = {
     "insight_face": insightface,
     "face_recognition": face_rec,
-    #"dlib": dlib,
+    "dlib": dlib,
 }
 
 
@@ -34,8 +37,8 @@ def fazer_benchmark(name: str, lib) -> dict:
     coletor.comecar()
     t_inicial = time.perf_counter()
 
-    lib.gerar_embedding(foto_individual, nome_teste, matricula_teste)
-    resultado = lib.comparar_embedding(foto_grupo, pasta_embeddings)
+    lib.gerar_embedding(ft_individual, nome_teste, matricula_teste)
+    resultado = lib.comparar_embedding(ft_grupo, pasta_embeddings)
 
     t_final = time.perf_counter()
     coletor.parar()

@@ -1,7 +1,11 @@
 import os
 import json
+from pathlib import Path
 import numpy as np
 import face_recognition as fc
+
+# raiz do projeto, independente do cwd de onde o script foi chamado
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
 # subpasta propria em data/JSON, pra nao colidir com embeddings de outras bibliotecas
 NOME_BIBLIOTECA = "face_recognition"
@@ -30,7 +34,7 @@ def gerar_embedding(path_individual, nome, matricula=0, tipo_retorno=1):
         }
 
         if tipo_retorno == 1:
-            pasta_lib = os.path.join("data", "JSON", NOME_BIBLIOTECA)
+            pasta_lib = ROOT_DIR / "data" / "JSON" / NOME_BIBLIOTECA
             os.makedirs(pasta_lib, exist_ok=True)
             path_json = os.path.join(pasta_lib, f"{matricula}.json")
             with open(path_json, "w", encoding="utf-8") as arq_json:
