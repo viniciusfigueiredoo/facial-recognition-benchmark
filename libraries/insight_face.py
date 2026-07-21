@@ -6,7 +6,9 @@ import os
 import numpy as np
 
 app = FaceAnalysis(name='buffalo_sc')
-app.prepare(ctx_id=0, det_size=(1280, 1280))
+# det_size padrao do buffalo_sc/det_500m; (1280,1280) faz o detector nao achar
+# rostos em fotos individuais (a face fica fora da faixa de escala dos anchors)
+app.prepare(ctx_id=0, det_size=(640, 640))
 
 # raiz do projeto, independente do cwd de onde o script foi chamado
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -80,7 +82,10 @@ def comparar_embedding(path_turma, pasta_JSON):
                 melhor_pontuacao = pontuacao
                 melhor_match = aluno
         
-        if melhor_match and melhor_pontuacao > 0.5:
+        # buffalo_sc (modelo compacto) gera similaridades mais baixas p/ matches
+        # reais; limiar de cosseno ajustado para 0.3 em vez de 0.5
+        # alteração feita em 2024-06-10, após testes com fotos de alunos reais
+        if melhor_match and melhor_pontuacao > 0.3:
             reconhecidos.append({
                 "nome": melhor_match["nome"],
                 "matricula": melhor_match["matricula"],
