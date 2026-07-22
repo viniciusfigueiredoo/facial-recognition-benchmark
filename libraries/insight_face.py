@@ -94,5 +94,5 @@ def comparar_embedding(path_turma, pasta_JSON):
         
     return {
         "rostos_encontrados": len(rostos),  # total detectado na foto
-        "acuracia": round(float(reconhecidos[0]["pontuacao"]), 2) if reconhecidos else 0.0
+        "acuracia": round(float(len(reconhecidos)/len(database)*100), 2) if reconhecidos else 0.0
     }

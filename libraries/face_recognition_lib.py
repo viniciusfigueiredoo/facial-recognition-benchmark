@@ -85,8 +85,7 @@ def comparar_embedding(path_turma, pasta_JSON):
                 melhor_pontuacao = pontuacao
                 melhor_match = aluno
 
-        # limiar padrao do modelo dlib/face_recognition: distancia < 0.6
-        # (pontuacao = 1 - distancia, entao pontuacao > 0.4)
+        # limiar padrao do modelo face_recognition: distancia < 0.6
         if melhor_match and melhor_pontuacao > 0.4:
             reconhecidos.append({
                 "nome": melhor_match["nome"],
@@ -96,7 +95,7 @@ def comparar_embedding(path_turma, pasta_JSON):
 
     return {
         "rostos_encontrados": len(encodings_turma),
-        "acuracia": round(float(reconhecidos[0]["pontuacao"]), 2) if reconhecidos else 0.0
+        "acuracia": round(float(len(reconhecidos)/len(database)*100), 2) if reconhecidos else 0.0
     }
 
 
