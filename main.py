@@ -14,12 +14,14 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 ROOT_DIR = Path(__file__).resolve().parent
 
-ft_individual = ROOT_DIR / "data" / "individual" / "ind_caua.jpeg"
+# Alunos cadastrados no benchmark: cada entrada e' a UNICA fonte de verdade
+# ligando foto -> nome -> matricula, pra nao dessincronizar como aconteceu antes
+alunos_cadastrados = [
+    {"foto": ROOT_DIR / "data" / "individual" / "ind_caua.jpeg", "nome": "caua", "matricula": "202411250036"},
+]
+
 ft_grupo = ROOT_DIR / "data" / "turma" / "centro.jpeg"
 pasta_embeddings = ROOT_DIR / "data" / "JSON"
-
-nome_teste = "caua"
-matricula_teste = "202411250036"
 
 libraries = {
     "insight_face": "libraries.insight_face",
@@ -39,11 +41,12 @@ def fazer_benchmark(nome_lib: str, modulo: str) -> dict:
     cfg = {
         "nome_lib": nome_lib,
         "modulo": modulo,
-        "ft_individual": str(ft_individual),
+        "alunos": [
+            {"foto": str(aluno["foto"]), "nome": aluno["nome"], "matricula": aluno["matricula"]}
+            for aluno in alunos_cadastrados
+        ],
         "ft_grupo": str(ft_grupo),
         "pasta_embeddings": str(pasta_embeddings),
-        "nome": nome_teste,
-        "matricula": matricula_teste,
     }
 
     proc = subprocess.run(
@@ -88,9 +91,9 @@ if __name__ == "__main__":
     os.makedirs(pasta_embeddings, exist_ok=True)
 
     resultados = []
-    for name, lib in libraries.items():
-            print(f"[benchmark] rodando: {name}...")
-            metricas = fazer_benchmark(name, lib)
-            resultados.append(metricas)
-    
+    for nome_lib, modulo in libraries.items():
+        print(f"[benchmark] rodando: {nome_lib}...")
+        metricas = fazer_benchmark(nome_lib, modulo)
+        resultados.append(metricas)
+
     print_results(resultados)

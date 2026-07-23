@@ -38,7 +38,8 @@ def executar(cfg: dict) -> dict:
     coletor.comecar()
     t0 = time.perf_counter()
 
-    lib.gerar_embedding(cfg["ft_individual"], cfg["nome"], cfg["matricula"])
+    for aluno in cfg["alunos"]:
+        lib.gerar_embedding(aluno["foto"], aluno["nome"], aluno["matricula"])
     resultado = lib.comparar_embedding(cfg["ft_grupo"], cfg["pasta_embeddings"])
 
     # fim da contagem
