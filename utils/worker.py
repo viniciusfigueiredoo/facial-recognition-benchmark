@@ -13,11 +13,11 @@ import time
 
 from pathlib import Path
 
-
 # sobe pra pasta raiz
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import psutil
 from utils.metricas import ColetorMetricas
+from utils.avaliacao import avaliar
 
 # constantes usadas pelo codigo
 MB = 1024 ** 2
@@ -53,6 +53,15 @@ def executar(cfg: dict) -> dict:
     resultado = resultado or {}
 
 
+    # realizar a verificao com o avaliacao.py
+
+    avaliacao = avaliar(
+        cfg["ft_grupo"],
+        resultado.get("matriculas_reconhecidas", []),
+        cfg["alunos"]
+    )
+
+
     return {
         "biblioteca":          cfg["nome_lib"],
         "tempo_s":             round(t_pipeline, 4),
@@ -61,7 +70,7 @@ def executar(cfg: dict) -> dict:
         "memoria_modelos_mb":  round((rss_modelos - rss_base) / MB, 2),
         "memoria_pico_mb":     round((pico - rss_base) / MB, 2),
         "rostos_encontrados":  resultado.get("rostos_encontrados"),
-        "acuracia":            resultado.get("acuracia"),
+        "avaliacao":           avaliacao,
     }
 
 

@@ -18,9 +18,12 @@ ROOT_DIR = Path(__file__).resolve().parent
 # ligando foto -> nome -> matricula, pra nao dessincronizar como aconteceu antes
 alunos_cadastrados = [
     {"foto": ROOT_DIR / "data" / "individual" / "ind_caua.jpeg", "nome": "caua", "matricula": "202411250036"},
+    {"foto": ROOT_DIR / "data" / "individual" / "ind_vitor.jpeg", "nome": "vitor", "matricula": "202411250037"},
+
+
 ]
 
-ft_grupo = ROOT_DIR / "data" / "turma" / "centro.jpeg"
+ft_grupo = ROOT_DIR / "data" / "turma" / "fora.jpeg"
 pasta_embeddings = ROOT_DIR / "data" / "JSON"
 
 libraries = {
@@ -67,7 +70,7 @@ def print_results(resultados: list[dict]):
     cabecalho = (
         f"{'Biblioteca':<18} {'Tempo (s)':>10} {'Modelos (s)':>12} "
         f"{'CPU méd. (%)':>13} {'Mem. mod. (MB)':>15} {'Mem. pico (MB)':>15} "
-        f"{'Rostos':>7} {'Acurácia':>9}"
+        f"{'Rostos':>7} {'Precisão':>9} {'Recall':>8}"
     )
     separador = "-" * len(cabecalho)
 
@@ -75,6 +78,9 @@ def print_results(resultados: list[dict]):
     print(cabecalho)
     print(separador)
     for r in resultados:
+        avaliacao = r["avaliacao"]
+        precisao = f"{avaliacao['precisao']}%" if avaliacao["precisao"] is not None else "N/A"
+        recall = f"{avaliacao['recall']}%" if avaliacao["recall"] is not None else "N/A"
         print(
             f"{r['biblioteca']:<18} "
             f"{r['tempo_s']:>10} "
@@ -83,7 +89,8 @@ def print_results(resultados: list[dict]):
             f"{r['memoria_modelos_mb']:>15} "
             f"{r['memoria_pico_mb']:>15} "
             f"{str(r['rostos_encontrados']):>7} "
-            f"{str(r['acuracia']):>9}"
+            f"{precisao:>9} "
+            f"{recall:>8}"
         )
     print(separador + "\n")
 

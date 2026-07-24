@@ -134,8 +134,6 @@ def comparar_embedding(path_turma, pasta_JSON):
 
     rostos_encontrados = []
 
-    total_jsons = len(lista_jsons)
-
     for matricula in lista_jsons:
 
         embedding_salvo = lista_jsons[matricula]["embedding"]
@@ -159,13 +157,9 @@ def comparar_embedding(path_turma, pasta_JSON):
                 break
 
 
-    acuracia = (
-        len(rostos_encontrados) / total_jsons
-    ) * 100
-
     resultado = {
         "rostos_encontrados": len(embeddings_turma),
-        "acuracia": round(acuracia, 2)
+        "matriculas_reconhecidas": sorted({r["matricula"] for r in rostos_encontrados}),
     }
 
     return resultado
