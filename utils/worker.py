@@ -62,11 +62,20 @@ def executar(cfg: dict) -> dict:
     )
 
 
+    """
+    trabalho total de CPU em nucleo-segundo (cpu% / 100 * tempo). Neutraliza a
+    contagem de nucleos: mede quanto de processamento a tarefa custou, seja em
+    1 nucleo por muito tempo(dlib e face_recognition) ou em varios nucleos em 
+    paralelo por pouco tempo(insight_face).
+    """
+    trabalho_total = coletor.uso_medio_cpu / 100 * t_pipeline
+
     return {
         "biblioteca":          cfg["nome_lib"],
         "tempo_s":             round(t_pipeline, 4),
         "tempo_modelos_s":     round(t_modelos, 4),
         "cpu_media_%":         round(coletor.uso_medio_cpu, 2),
+        "trabalho_nucleo_s":   round(trabalho_total, 4),
         "memoria_modelos_mb":  round((rss_modelos - rss_base) / MB, 2),
         "memoria_pico_mb":     round((pico - rss_base) / MB, 2),
         "rostos_encontrados":  resultado.get("rostos_encontrados"),
