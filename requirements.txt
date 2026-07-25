@@ -1,0 +1,15 @@
+numpy
+opencv-python
+psutil
+insightface
+face_recognition_models
+# face_recognition_models usa pkg_resources, removido do setuptools >=81
+setuptools<81
+
+# face_recognition depende do pacote "dlib", que no Windows so instala compilando
+# com Visual Studio + CMake. Para evitar isso, use a wheel pre-compilada dlib-bin
+# e instale o face_recognition sem puxar a dependencia real:
+#   pip install dlib-bin
+#   pip install --no-deps face_recognition
+dlib-bin
+face_recognition

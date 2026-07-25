@@ -57,6 +57,7 @@ class ColetorMetricas:
             CPU em percentual do processo
             Memória em MB de quanto o processo ocupa da RAM   
         """
+        self._process.cpu_percent(interval=None)  # inicializa a medição de CPU , evita de pegar 0% na primeira amostra
         while not self._stop.is_set():
             self._cpu_samples.append(self._process.cpu_percent(interval=None))
             self._mem_samples.append(self._process.memory_info().rss / (1024 ** 2))  # MB

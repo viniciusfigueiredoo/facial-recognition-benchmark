@@ -2,16 +2,20 @@ import os
 import json
 import dlib
 import numpy as np
+from pathlib import Path
+
+# raiz do projeto, independente do cwd de onde o script foi chamado
+ROOT_DIR = Path(__file__).resolve().parent.parent
 
 # arquivo com modelo treinado para detececao de pontos facais
-predictor = dlib.shape_predictor(r"..\modelos\shape_predictor_68_face_landmarks.dat")
+predictor = dlib.shape_predictor(str(ROOT_DIR / "models" / "shape_predictor_68_face_landmarks.dat"))
 # encontra os pontos facais de cada rosto
-face_rec = dlib.face_recognition_model_v1(r"..\modelos\dlib_face_recognition_resnet_model_v1.dat")
+face_rec = dlib.face_recognition_model_v1(str(ROOT_DIR / "models" / "dlib_face_recognition_resnet_model_v1.dat"))
 # detecta os rostos e sua posição
 detector = dlib.get_frontal_face_detector()
 
 
-PASTA_DADOS = r"C:\Users\Murilo"
+PASTA_DADOS = ROOT_DIR / "data" / "JSON" / "dlib"
 os.makedirs(PASTA_DADOS, exist_ok=True)
 
 
@@ -19,14 +23,12 @@ os.makedirs(PASTA_DADOS, exist_ok=True)
 
 def gerar_embedding(path_individual, nome, matricula, tipo_retorno=1):
 
-    imagem = dlib.load_rgb_image(path_individual)
+    imagem = dlib.load_rgb_image(str(path_individual))
 
     # detecta rostos
     faces = detector(imagem, 1)
-
-    if len(faces) == 0:
-        print("Nenhum rosto encontrado.")
-        return None
+    if len(faces) != 1:
+        raise ValueError(f"A foto individual de {nome} ({matricula}) tem {len(faces)} rostos. Espera-se apenas 1")
 
     # pega apenas o primeiro rosto
     face = faces[0]
@@ -50,7 +52,7 @@ def gerar_embedding(path_individual, nome, matricula, tipo_retorno=1):
     if tipo_retorno == 1:
 
         nomearquivo = (
-            f"{nome.lower().strip().replace(' ', '_')}_{matricula}.json"
+            f"{matricula}.json"
         )
 
         caminhosalvar = os.path.join(PASTA_DADOS, nomearquivo)
@@ -81,8 +83,10 @@ def comparar_embedding(path_turma, pasta_JSON):
 
     lista_jsons = {}
 
+    pasta_lib = os.path.join(pasta_JSON, "dlib")
+
     arquivos = [
-        a for a in os.listdir(pasta_JSON)
+        a for a in os.listdir(pasta_lib)
         if a.endswith(".json")
     ]
 
@@ -92,7 +96,7 @@ def comparar_embedding(path_turma, pasta_JSON):
 
     for arquivo in arquivos:
 
-        caminho_arquivo = os.path.join(pasta_JSON, arquivo)
+        caminho_arquivo = os.path.join(pasta_lib, arquivo)
 
         with open(caminho_arquivo, "r", encoding="utf-8") as f:
 
@@ -105,7 +109,7 @@ def comparar_embedding(path_turma, pasta_JSON):
 
     embeddings_turma = []
 
-    imagem_turma = dlib.load_rgb_image(path_turma)
+    imagem_turma = dlib.load_rgb_image(str(path_turma))
 
     faces = detector(imagem_turma, 1)
 
@@ -127,8 +131,6 @@ def comparar_embedding(path_turma, pasta_JSON):
         embeddings_turma.append(embedding)
 
     rostos_encontrados = []
-
-    total_jsons = len(lista_jsons)
 
     for matricula in lista_jsons:
 
@@ -153,13 +155,9 @@ def comparar_embedding(path_turma, pasta_JSON):
                 break
 
 
-    acuracia = (
-        len(rostos_encontrados) / total_jsons
-    ) * 100
-
     resultado = {
-        "rostos encontrados": rostos_encontrados,
-        "acurácia": round(acuracia, 2)
+        "rostos_encontrados": len(embeddings_turma),
+        "matriculas_reconhecidas": sorted({r["matricula"] for r in rostos_encontrados}),
     }
 
     return resultado
