@@ -29,8 +29,6 @@ def gerar_embedding(path_individual, nome, matricula, tipo_retorno=1):
     faces = detector(imagem, 1)
     if len(faces) != 1:
         raise ValueError(f"A foto individual de {nome} ({matricula}) tem {len(faces)} rostos. Espera-se apenas 1")
-    if len(faces) == 0:
-        raise ValueError(f"Nenhum rosto encontrado na foto de {nome} ({matricula}).")
 
     # pega apenas o primeiro rosto
     face = faces[0]
