@@ -17,7 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import psutil
 from utils.metricas import ColetorMetricas
-from utils.avaliacao import avaliar
+from utils.avaliacao import avaliar, taxas
 
 # constantes usadas pelo codigo
 MB = 1024 ** 2
@@ -33,41 +33,41 @@ def executar(cfg: dict) -> dict:
     t_modelos = time.perf_counter() - t0
     rss_modelos = processo.memory_info().rss
 
+    # registro
+    for aluno in cfg["alunos"]:
+        lib.gerar_embedding(aluno["foto"], aluno["nome"], aluno["matricula"])
+
     # inicio da contagem
     coletor = ColetorMetricas()
     coletor.comecar()
     t0 = time.perf_counter()
 
-    for aluno in cfg["alunos"]:
-        lib.gerar_embedding(aluno["foto"], aluno["nome"], aluno["matricula"])
-    resultado = lib.comparar_embedding(cfg["ft_grupo"], cfg["pasta_embeddings"])
+    # processa todas as fotos de turma
+    avaliacoes = []
+    for foto in cfg["fotos_turma"]:
+        resultado = lib.comparar_embedding(foto, cfg["pasta_embeddings"]) or {}
+        avaliacoes.append(avaliar(foto, resultado.get("matriculas_reconhecidas", []) , cfg["alunos"]))
+
 
     # fim da contagem
     t_pipeline = time.perf_counter() - t0
     coletor.parar()
 
-    # vai pegar o pico de memoria do processo, sem contar seus processos-filhos(RUSAGE_SELF), transformadndo bytes.
+
+    # agregar uma matriz para calcular taxas
+    vp = sum(a["vp"] for a in avaliacoes)
+    fp = sum(a["fp"] for a in avaliacoes)
+    fn = sum(a["fn"] for a in avaliacoes)
+    vn = sum(a["vn"] for a in avaliacoes)
+    avaliacao = taxas(vp, fp, fn, vn)
+
+    # pico de memoria do processo, sem contar processos-filhos (RUSAGE_SELF), em bytes
     pico = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss * 1024
 
-    # impedir que retorne none
-    resultado = resultado or {}
-
-
-    # realizar a verificao com o avaliacao.py
-
-    avaliacao = avaliar(
-        cfg["ft_grupo"],
-        resultado.get("matriculas_reconhecidas", []),
-        cfg["alunos"]
-    )
-
-
-    """
-    trabalho total de CPU em nucleo-segundo (cpu% / 100 * tempo). Neutraliza a
-    contagem de nucleos: mede quanto de processamento a tarefa custou, seja em
-    1 nucleo por muito tempo(dlib e face_recognition) ou em varios nucleos em 
-    paralelo por pouco tempo(insight_face).
-    """
+    # trabalho total de CPU em nucleo-segundo (cpu% / 100 * tempo). Neutraliza a
+    # contagem de nucleos: mede quanto de processamento a tarefa custou, seja em
+    # 1 nucleo por muito tempo (dlib e face_recognition) ou em varios nucleos em
+    # paralelo por pouco tempo (insight_face).
     trabalho_total = coletor.uso_medio_cpu / 100 * t_pipeline
 
     return {
@@ -78,7 +78,6 @@ def executar(cfg: dict) -> dict:
         "trabalho_nucleo_s":   round(trabalho_total, 4),
         "memoria_modelos_mb":  round((rss_modelos - rss_base) / MB, 2),
         "memoria_pico_mb":     round((pico - rss_base) / MB, 2),
-        "rostos_encontrados":  resultado.get("rostos_encontrados"),
         "avaliacao":           avaliacao,
     }
 

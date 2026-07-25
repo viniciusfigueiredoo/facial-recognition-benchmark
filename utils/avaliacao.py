@@ -12,6 +12,17 @@ GABARITO = {
 }
 
 
+def taxas(vp, fp, fn, vn) -> dict:
+    """Calcula acuracia/precisao/recall a partir de contagens ja somadas."""
+    total = vp + fp + fn + vn
+    return {
+        "vp": vp, "fp": fp, "fn": fn, "vn": vn,
+        "acuracia": round((vp + vn) / total * 100, 2) if total else None,
+        "precisao": round(vp / (vp + fp) * 100, 2) if (vp + fp) else None,
+        "recall":   round(vp / (vp + fn) * 100, 2) if (vp + fn) else None,
+    }
+
+
 def avaliar(caminho_foto, matriculas_reconhecidas, alunos_cadastrados) -> dict:
     """
     Compara se o valor resultando da lib esta batendo com o gabarito
@@ -45,15 +56,11 @@ def avaliar(caminho_foto, matriculas_reconhecidas, alunos_cadastrados) -> dict:
         else:
             vn += 1
 
-    total = vp+fn+fp+vn
+    # reusa a mesma formula da agregacao, so acrescenta as listas de erros da foto
+    resultado = taxas(vp, fp, fn, vn)
+    resultado["falsos_positivos"] = falsos_pos
+    resultado["falsos_negativos"] = falsos_neg
+    return resultado
 
-    return {
-        "vp": vp, "fp": fp, "fn": fn, "vn": vn,
-        "acuracia": round((vp + vn) / total * 100, 2) if total else None,
-        "precisao": round(vp / (vp + fp) * 100, 2) if (vp + fp) else None,
-        "recall":   round(vp / (vp + fn) * 100, 2) if (vp + fn) else None,
-        "falsos_positivos": falsos_pos,
-        "falsos_negativos": falsos_neg,
-    }
 
 
