@@ -29,6 +29,13 @@ def avaliar(caminho_foto, matriculas_reconhecidas, alunos_cadastrados) -> dict:
     """
 
     nome_foto = Path(caminho_foto).name
+
+    # verificar se tem gabarito para a foto utilizada 
+    if nome_foto not in GABARITO:
+        raise KeyError(
+            f"{nome_foto} nao tem registro no gabarito"
+        )
+    
     presentes = GABARITO.get(nome_foto, set())
     reconhecidas = set(matriculas_reconhecidas)
     universo = {a["matricula"]
