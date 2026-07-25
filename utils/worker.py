@@ -10,6 +10,8 @@ import json
 import resource
 import sys
 import time
+import glob
+import os
 
 from pathlib import Path
 
@@ -23,6 +25,15 @@ from utils.avaliacao import avaliar, taxas
 MB = 1024 ** 2
 MARCADOR = "###METRICAS###"
 
+
+def limpar_banco(pasta_embeddings, subpasta):
+    # vai rodar os bancos json e apagar o conteudo
+    pasta_lib = os.path.join(pasta_embeddings, subpasta)
+    os.makedirs(pasta_lib, exist_ok=True)
+    for p in glob.glob(os.path.join(pasta_lib, "*.json")):
+        os.remove(p)
+
+
 def executar(cfg: dict) -> dict:
     processo = psutil.Process()
     rss_base = processo.memory_info().rss
@@ -32,6 +43,8 @@ def executar(cfg: dict) -> dict:
     lib = importlib.import_module(cfg["modulo"])
     t_modelos = time.perf_counter() - t0
     rss_modelos = processo.memory_info().rss
+
+    limpar_banco(cfg["pasta_embeddings"], cfg["nome_lib"])
 
     # registro
     for aluno in cfg["alunos"]:
