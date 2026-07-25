@@ -82,10 +82,8 @@ def comparar_embedding(path_turma, pasta_JSON):
                 melhor_pontuacao = pontuacao
                 melhor_match = aluno
         
-        # buffalo_sc (modelo compacto) gera similaridades mais baixas p/ matches
-        # reais; limiar de cosseno ajustado para 0.45 em vez de 0.5
-        # alteração feita em 2024-06-10, após testes com fotos de alunos reais
-        if melhor_match and melhor_pontuacao > 0.45:
+
+        if melhor_match and melhor_pontuacao > 0.5:
             reconhecidos.append({
                 "nome": melhor_match["nome"],
                 "matricula": melhor_match["matricula"],
