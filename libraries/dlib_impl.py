@@ -27,10 +27,10 @@ def gerar_embedding(path_individual, nome, matricula, tipo_retorno=1):
 
     # detecta rostos
     faces = detector(imagem, 1)
-
+    if len(faces) != 1:
+        raise ValueError(f"A foto individual de {nome} ({matricula}) tem {len(faces)} rostos. Espera-se apenas 1")
     if len(faces) == 0:
-        print("Nenhum rosto encontrado.")
-        return None
+        raise ValueError(f"Nenhum rosto encontrado na foto de {nome} ({matricula}).")
 
     # pega apenas o primeiro rosto
     face = faces[0]
@@ -54,7 +54,7 @@ def gerar_embedding(path_individual, nome, matricula, tipo_retorno=1):
     if tipo_retorno == 1:
 
         nomearquivo = (
-            f"{nome.lower().strip().replace(' ', '_')}_{matricula}.json"
+            f"{matricula}.json"
         )
 
         caminhosalvar = os.path.join(PASTA_DADOS, nomearquivo)

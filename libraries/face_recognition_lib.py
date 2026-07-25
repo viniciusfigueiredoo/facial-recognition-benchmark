@@ -24,7 +24,7 @@ def gerar_embedding(path_individual, nome, matricula=0, tipo_retorno=1):
     encodings = fc.face_encodings(imagem_carregada)
 
     if len(encodings) != 1:
-        print("Nenhum ou mais de um rosto numa foto individual.")
+        raise ValueError(f"A foto individual de {nome} ({matricula}) tem {len(encodings)} rostos. Espera-se apenas 1")
     else:
         # formato do dicionario que vai se tornar o JSON
         resultado = {

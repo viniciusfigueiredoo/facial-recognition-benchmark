@@ -27,7 +27,7 @@ def gerar_embedding(path_individual, nome, matricula, tipo_retorno=1):
     rosto = app.get(imagem_individual)
     
     if len(rosto) != 1:
-        print("Nenhum ou mais de um rosto numa foto individual.")
+        raise ValueError(f"A foto individual de {nome} ({matricula}) tem {len(rosto)} rostos. Espera-se apenas 1")
     else:
         dados = {
             "nome": nome,
